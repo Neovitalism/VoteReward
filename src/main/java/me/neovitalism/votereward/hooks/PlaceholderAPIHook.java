@@ -8,7 +8,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
 public class PlaceholderAPIHook {
-    public PlaceholderAPIHook() {
+    public static void register() {
         Placeholders.register(
                 Identifier.of("votereward", "party_count"),
                 (ctx, arg) -> PlaceholderResult.value(Text.literal(String.valueOf(VoteParty.getCurrentVotes())))

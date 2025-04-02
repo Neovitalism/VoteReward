@@ -38,11 +38,6 @@ public class VoteReward extends NeoMod {
     @Override
     public void onInitialize() {
         super.onInitialize();
-        try {
-            Class.forName("eu.pb4.placeholders.api.Placeholders");
-            new PlaceholderAPIHook();
-            this.getLogger().info("TextPlaceholderAPI Support Enabled!");
-        } catch (ClassNotFoundException ignored) {}
         VoteReward.instance = this;
         new VoteStorage(EXECUTOR);
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
@@ -51,6 +46,14 @@ public class VoteReward extends NeoMod {
             UUIDCache.cacheUUID(player.getName().getString(), player.getUuid());
             VoteStorage.checkOwedVotes(player);
         });
+
+        try {
+            Class.forName("com.vexsoftware.votifier.fabric.NuVotifier");
+
+
+
+        } catch (ClassNotFoundException ignored) {}
+
         VoteListener.EVENT.register(vote -> VoteReward.EXECUTOR.runTaskSync(() -> {
             ServerPlayerEntity player = PlayerManager.getPlayer(vote.getUsername());
             if (!VoteRewardConfig.shouldStoreOfflineVotes() || player != null) {
@@ -61,9 +64,16 @@ public class VoteReward extends NeoMod {
             } else VoteStorage.storeVote(vote.getUsername(), vote.getServiceName());
             if (VoteRewardConfig.isVotePartiesEnabled()) VoteParty.increment(vote.getUsername(), vote.getServiceName());
         }));
+
         VoteParty.loadCurrentVotes(this.getConfig("current-votes.yml", false));
         VoteStorage.loadVotes(this.getConfig("stored-votes.yml", false));
+
         this.getLogger().info("Loaded!");
+        try {
+            Class.forName("eu.pb4.placeholders.api.Placeholders");
+            PlaceholderAPIHook.register();
+            this.getLogger().info("TextPlaceholderAPI Support Enabled!");
+        } catch (ClassNotFoundException ignored) {}
     }
 
     @Override

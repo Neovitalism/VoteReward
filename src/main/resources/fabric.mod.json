@@ -27,12 +27,12 @@
     "fabric-api": "*",
     "minecraft": "~${minecraft_version}",
     "java": ">=21",
-    "neoapi": ">=${neo_api_version}",
-    "nuvotifier-fabric": "*"
+    "neoapi": ">=${neo_api_version}"
   },
 
   "suggests": {
     "luckperms": ">=5.4.139",
-    "placeholderapi": "*"
+    "placeholderapi": "*",
+    "nuvotifier-fabric": "*"
   }
 }
