@@ -6,7 +6,6 @@ import me.neovitalism.neoapi.async.NeoExecutor;
 import me.neovitalism.neoapi.modloading.NeoMod;
 import me.neovitalism.neoapi.modloading.command.CommandRegistryInfo;
 import me.neovitalism.neoapi.modloading.command.ReloadCommand;
-import me.neovitalism.neoapi.player.PlayerManager;
 import me.neovitalism.neoapi.utils.CommandUtil;
 import me.neovitalism.neoapi.utils.StringUtil;
 import me.neovitalism.votereward.commands.VoteCommand;
@@ -19,6 +18,7 @@ import me.neovitalism.votereward.voteparty.VoteParty;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.server.network.ServerPlayerEntity;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class VoteReward extends NeoMod {
@@ -52,14 +52,24 @@ public class VoteReward extends NeoMod {
             VoteStorage.checkOwedVotes(player);
         });
         VoteListener.EVENT.register(vote -> VoteReward.EXECUTOR.runTaskSync(() -> {
-            ServerPlayerEntity player = PlayerManager.getPlayer(vote.getUsername());
-            if (!VoteRewardConfig.shouldStoreOfflineVotes() || player != null) {
-                for (String command : VoteRewardConfig.getCommandsOnVote()) {
-                    CommandUtil.executeServerCommand(StringUtil.replaceReplacements(command,
-                            Map.of("{player}", vote.getUsername(), "{service}", vote.getServiceName())));
-                }
-            } else VoteStorage.storeVote(vote.getUsername(), vote.getServiceName());
+//            ServerPlayerEntity player = PlayerManager.getPlayer(vote.getUsername());
             if (VoteRewardConfig.isVotePartiesEnabled()) VoteParty.increment(vote.getUsername(), vote.getServiceName());
+            Map<String, String> replacements = new HashMap<>();
+            replacements.put("{player}", vote.getUsername());
+            replacements.put("{count}", String.valueOf(VoteParty.getCurrentVotes()));
+            replacements.put("{target}", String.valueOf(VoteRewardConfig.getVotePartyTarget()));
+            replacements.put("{service}", vote.getServiceName());
+            for (String command : VoteRewardConfig.getCommandsOnVote()) {
+                CommandUtil.executeServerCommand(StringUtil.replaceReplacements(command, replacements));
+            }
+
+
+//            if (!VoteRewardConfig.shouldStoreOfflineVotes() || player != null) {
+//                for (String command : VoteRewardConfig.getCommandsOnVote()) {
+//                    CommandUtil.executeServerCommand(StringUtil.replaceReplacements(command,
+//                            Map.of("{player}", vote.getUsername(), "{service}", vote.getServiceName())));
+//                }
+//            } else VoteStorage.storeVote(vote.getUsername(), vote.getServiceName());
         }));
         VoteParty.loadCurrentVotes(this.getConfig("current-votes.yml", false));
         VoteStorage.loadVotes(this.getConfig("stored-votes.yml", false));
